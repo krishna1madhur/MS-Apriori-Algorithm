@@ -94,16 +94,11 @@ def calTailCount(tailString):
 
 
 def msCandidateGen(listFkMinus1):
-    print("INSIDE MS CANDIDATE GEN FUNCTION\n")
-    print(listFkMinus1)
-    print("END MS CANDIDATE FUNCTION\n")
     #EMPTY THE CANDIDATE LIST Ck
     listCk = []
 
     for i in range(0,len(listFkMinus1)):
         for j in range (0,len(listFkMinus1)):
-            if listFkMinus1[i][0] != listFkMinus1[j][0]:
-                break
 
             similarityFlag = True
 
@@ -113,7 +108,6 @@ def msCandidateGen(listFkMinus1):
                     break
             if similarityFlag == True:
                 continue
-            print("First List ",listFkMinus1[i],"\tSecond List",listFkMinus1[j],"\n")
             flag = 1
             for k in range( 0,len(listFkMinus1[i]) - 1 ):
                 if(listFkMinus1[i][k] != listFkMinus1[j][k]):
@@ -169,41 +163,22 @@ def modifyListForMustHave(k,listFk):
                 listResult.append(item)
     return listResult
 def printFunction(k, dictionaryTailCount , listFk):
-    print("PRINT FUNCTION")
-    print(k)
-    print(listFk)
-    print("END PRINT FUNCTION\n")
     finalList = modifyListForMustHave(k,listFk)
-    dictionarySortedF1 = OrderedDict({})
     if len(finalList)!=0:
         dictionaryFrequency = {}
         count = 0
         if(k == 1):
             print("Frequent 1-itemsets \n")
             for item in finalList:
-                dictionarySortedF1[item] = dictionaryI[item]
-            dictionarySortedF1 = OrderedDict(sorted(dictionarySortedF1.items(), key=lambda t: t[1]))
-            finalList = dictionarySortedF1.keys()
-            for item in finalList:
                 print("\t",listOfItems.count(item), ': {', item, '}')
         else:
             print("Frequent ", k,"-itemsets \n")
-            #for item in finalList:
-                    #itemSubString = ','.join(item[1:])
-                    #itemString =','.join(item)
-                    #dictionaryFrequency = computeFrequency(listFk)
-                    #print("\t",dictionaryFrequency[itemString],": {", itemString, "}")
-                    #print("\tTailcount = ",dictionaryTailCount[itemSubString])
-            for eachList in finalList:
-                itemString = ','.join(eachList)
-                dictionaryFrequency = computeFrequency(listFk)
-                dictionarySortedF1[itemString] = dictionaryFrequency[itemString]
-            dictionarySortedF1 = OrderedDict(sorted(dictionarySortedF1.items(), key=lambda t: t[1]))
-            for key in dictionarySortedF1.keys():
-                print("\t", dictionaryFrequency[key], ": {", key, "}")
-                itemSubString = str.split(key,',',1)[1]
-                print("\tTailcount = ", dictionaryTailCount[itemSubString])
-
+            for item in finalList:
+                    itemSubString = ','.join(item[1:])
+                    itemString =','.join(item)
+                    dictionaryFrequency = computeFrequency(listFk)
+                    print("\t",dictionaryFrequency[itemString],": {", itemString, "}")
+                    print("\tTailcount = ",dictionaryTailCount[itemSubString])
         print("\n\tTotal number of freuqent ",k, "-itemsets = ",len(finalList),"\n")
 
 #USED FOR COMPUTING FREQUENCY OF EACH ITEMSET IN THE SET OF TRANSACTIONS
@@ -304,7 +279,6 @@ if __name__ == "__main__":
             transaction = transaction.partition('{')[-1].rpartition('}')[0]
             transactionList = [x.strip() for x in transaction.split(',')]
             listOfTrasactions.append(transactionList)
-    print(listOfTrasactions)
     # SORT THE MIS VALUES AND STORE IN A DICTIONARY
     dictionaryMIS = OrderedDict(sorted(dictionaryMIS.items(), key=lambda t: t[1]))
     #CALL TO THE MAIN ALGORITHM MS-APRIORI
