@@ -3,8 +3,8 @@ from collections import OrderedDict
 from operator import itemgetter
 
 #Input parameter-file values
-dictionaryMIS = {}
-dictionaryI={}
+dictionaryMIS = OrderedDict({})
+dictionaryI=OrderedDict({})
 sortedDictionaryMIS ={}
 cannotBeTogether = []
 mustHave = []
@@ -15,6 +15,7 @@ listL = []
 listF1 = []
 listFk = []
 dictionaryFk = {}
+dictionaryTail = OrderedDict({})
 
 
 def msApriori():
@@ -60,33 +61,59 @@ def msApriori():
                     dictionaryCount[candidateString] = 0
 # TAILCOUNT
                 if(lengthOfTailCandidate == 0):
-                    if(tailCandidateString in dictionaryTailCount.keys()):
-                        dictionaryTailCount[tailCandidateString] = dictionaryTailCount[tailCandidateString] + 1
-                    else:
-                        dictionaryTailCount[tailCandidateString] = 1
-                elif(tailCandidateString not in dictionaryTailCount.keys()):
-                    dictionaryTailCount[tailCandidateString] = 0
+                    if tailCandidateString not in dictionaryTail.keys():
+                        calTailCount(tailCandidateString)
         listOfC = []
         for c in listCk:
             stringC = ','.join(c)
             if(dictionaryCount[stringC]/len(listOfTrasactions) >= dictionaryMIS[ c[0] ]):
-                listOfC.append(c)
+                if c not in listOfC:
+                    listOfC.append(c)
         dictionaryFk[k] = listOfC
 
-        printFunction(k, dictionaryTailCount, dictionaryFk[k])
+        printFunction(k, dictionaryTail, dictionaryFk[k])
 #        print("\ndictionary tail count: ", dictionaryTailCount)
 #        print("\nF", k, ": ", dictionaryFk[k])
 #        print("END OF ONE ITERATION\n")
         k = k + 1
 
+def calTailCount(tailString):
+    for transaction in listOfTrasactions:
+        flag = True
+        for item in str.split(tailString,','):
+            if item not in transaction:
+                flag = False
+                break
+        if flag == True:
+            if tailString in dictionaryTail.keys():
+                dictionaryTail[tailString] = dictionaryTail[tailString] + 1
+            else:
+                dictionaryTail[tailString] = 1
+    if tailString not in dictionaryTail.keys():
+        dictionaryTail[tailString] = 0
 
 
 def msCandidateGen(listFkMinus1):
+    print("INSIDE MS CANDIDATE GEN FUNCTION\n")
+    print(listFkMinus1)
+    print("END MS CANDIDATE FUNCTION\n")
     #EMPTY THE CANDIDATE LIST Ck
     listCk = []
 
     for i in range(0,len(listFkMinus1)):
-        for j in range(i+1,len(listFkMinus1)):
+        for j in range (0,len(listFkMinus1)):
+            if listFkMinus1[i][0] != listFkMinus1[j][0]:
+                break
+
+            similarityFlag = True
+
+            for l in range(0,len(listFkMinus1[i])):
+                if(listFkMinus1[i][l] != listFkMinus1[j][l]):
+                    similarityFlag = False
+                    break
+            if similarityFlag == True:
+                continue
+            print("First List ",listFkMinus1[i],"\tSecond List",listFkMinus1[j],"\n")
             flag = 1
             for k in range( 0,len(listFkMinus1[i]) - 1 ):
                 if(listFkMinus1[i][k] != listFkMinus1[j][k]):
@@ -98,43 +125,86 @@ def msCandidateGen(listFkMinus1):
                     listC = []
                     listC = listFkMinus1[i][:]
                     listC.append(listFkMinus1[j][len(listFkMinus1[i]) - 1])
-                    listCk.append(listC)
+                    count = 0
+                    for eachItem in listC:
+                        if eachItem in cannotBeTogether:
+                            count = count + 1
+                    if count < 2:
+                        listCk.append(listC)
+                    else:
+                        continue
                     subSetList = []
 #DILIP CODE
-                    for i in range(0, len(listC)):
-                        if (i == 0):
-                            for j in range(i + 1, len(listC)):
+                    for m in range(0, len(listC)):
+                        if (m == 0):
+                            for n in range(m + 1, len(listC)):
                                 listSub = []
-                                listSub.append(listC[i])
-                                if (len(listC[i + 1:j]) != 0):
-                                    listSub = listSub + listC[i + 1:j]
-                                if (len(listC[j + 1:]) != 0):
-                                    listSub = listSub + listC[j + 1:]
+                                listSub.append(listC[m])
+                                if (len(listC[m + 1:n]) != 0):
+                                    listSub = listSub + listC[m + 1:n]
+                                if (len(listC[n + 1:]) != 0):
+                                    listSub = listSub + listC[n + 1:]
                                 subSetList.append(listSub)
                         else:
-                            subSetList.append(listC[i:])
+                            subSetList.append(listC[m:])
                             break;
                     for subSet in subSetList:
                         if (listC[0] in subSet) or ( dictionaryMIS[listC[1]] == dictionaryMIS[listC[0]] ):
                             if subSet not in listFkMinus1:
                                 listCk.remove(listC)
     return listCk
-
+def modifyListForMustHave(k,listFk):
+    listResult = []
+    for item in listFk:
+        if k==1:
+            if item in mustHave:
+                listResult.append(item)
+        else:
+            flag = False
+            for val in item:
+                if val in mustHave:
+                    flag = True
+                    break
+            if flag == True:
+                listResult.append(item)
+    return listResult
 def printFunction(k, dictionaryTailCount , listFk):
-    dictionaryFrequency = {}
-    if(k == 1):
-        print("Frequent 1-itemsets \n")
-        for item in listFk:
-            print("\t",listOfItems.count(item), ': {', item, '}')
-    else:
-        print("Frequent ", k,"-itemsets \n")
-        for item in listFk:
-            itemSubString = ','.join(item[1:])
-            itemString =','.join(item)
-            dictionaryFrequency = computeFrequency(listFk)
-            print("\t",dictionaryFrequency[itemString],": {", itemString, "}")
-            print("\tTailcount = ",dictionaryTailCount[itemSubString])
-    print("\n\tTotal number of freuqent ",k, "-itemsets = ",len(listFk),"\n")
+    print("PRINT FUNCTION")
+    print(k)
+    print(listFk)
+    print("END PRINT FUNCTION\n")
+    finalList = modifyListForMustHave(k,listFk)
+    dictionarySortedF1 = OrderedDict({})
+    if len(finalList)!=0:
+        dictionaryFrequency = {}
+        count = 0
+        if(k == 1):
+            print("Frequent 1-itemsets \n")
+            for item in finalList:
+                dictionarySortedF1[item] = dictionaryI[item]
+            dictionarySortedF1 = OrderedDict(sorted(dictionarySortedF1.items(), key=lambda t: t[1]))
+            finalList = dictionarySortedF1.keys()
+            for item in finalList:
+                print("\t",listOfItems.count(item), ': {', item, '}')
+        else:
+            print("Frequent ", k,"-itemsets \n")
+            #for item in finalList:
+                    #itemSubString = ','.join(item[1:])
+                    #itemString =','.join(item)
+                    #dictionaryFrequency = computeFrequency(listFk)
+                    #print("\t",dictionaryFrequency[itemString],": {", itemString, "}")
+                    #print("\tTailcount = ",dictionaryTailCount[itemSubString])
+            for eachList in finalList:
+                itemString = ','.join(eachList)
+                dictionaryFrequency = computeFrequency(listFk)
+                dictionarySortedF1[itemString] = dictionaryFrequency[itemString]
+            dictionarySortedF1 = OrderedDict(sorted(dictionarySortedF1.items(), key=lambda t: t[1]))
+            for key in dictionarySortedF1.keys():
+                print("\t", dictionaryFrequency[key], ": {", key, "}")
+                itemSubString = str.split(key,',',1)[1]
+                print("\tTailcount = ", dictionaryTailCount[itemSubString])
+
+        print("\n\tTotal number of freuqent ",k, "-itemsets = ",len(finalList),"\n")
 
 #USED FOR COMPUTING FREQUENCY OF EACH ITEMSET IN THE SET OF TRANSACTIONS
 def computeFrequency(listFk):
@@ -156,11 +226,15 @@ def computeFrequency(listFk):
 
 def init_pass():
     # SCAN THE DATA AND RECORD THE SUPPORT
+    setOfItems = []
     numberOfTransactions = myTransactions.__len__();
     for transaction in listOfTrasactions:
         for item in transaction:
             listOfItems.append(item)
-    setOfItems = set(listOfItems)
+            if item not in setOfItems:
+                setOfItems.append(item)
+
+    #setOfItems = set(listOfItems)
     for item in setOfItems:
         supportCountOfItem = listOfItems.count(item)
         support = round((supportCountOfItem/numberOfTransactions),4)
@@ -187,9 +261,15 @@ def computeC2():
             for itemH in range(itemL+1, len(listL)):
                 if(dictionaryI[ listL[itemH] ] >= dictionaryMIS[ listL[itemL] ] ) and ( abs(dictionaryI[listL[itemH]]-dictionaryI[listL[itemL]]) <= SDC ):
                     twoItemsList = []
-                    twoItemsList.append(listL[itemL])
-                    twoItemsList.append(listL[itemH])
-                    listC2.append(twoItemsList)
+                    count = 0
+                    if listL[itemL] in cannotBeTogether:
+                        count = count + 1
+                    if listL[itemH] in cannotBeTogether:
+                        count = count + 1
+                    if count != 2:
+                        twoItemsList.append(listL[itemL])
+                        twoItemsList.append(listL[itemH])
+                        listC2.append(twoItemsList)
     return listC2
 
 def computeF1():
@@ -213,9 +293,10 @@ if __name__ == "__main__":
             if subString in parameter:
                 dictionaryMIS[ parameter[parameter.find('(')+1: parameter.find(')')]] = float((parameter.split('= ',1)[1]))
             elif 'cannot_be_together' in parameter:
-                cannotBeTogether.append(parameter.split(': ',1)[1])
+                cannotBeTogetherData = parameter.partition('{')[-1].rpartition('}')[0]
+                cannotBeTogether = [x.strip() for x in cannotBeTogetherData.split(',')]
             elif 'must-have' in parameter:
-                mustHave.append(parameter.split(': ',1)[1])
+                mustHave = parameter.split(': ',1)[1].split(' or ')
             elif 'SDC' in parameter:
                 SDC = float(parameter.split('= ',1)[1])
         for transaction in myTransactions:
@@ -223,9 +304,11 @@ if __name__ == "__main__":
             transaction = transaction.partition('{')[-1].rpartition('}')[0]
             transactionList = [x.strip() for x in transaction.split(',')]
             listOfTrasactions.append(transactionList)
+    print(listOfTrasactions)
     # SORT THE MIS VALUES AND STORE IN A DICTIONARY
     dictionaryMIS = OrderedDict(sorted(dictionaryMIS.items(), key=lambda t: t[1]))
     #CALL TO THE MAIN ALGORITHM MS-APRIORI
     msApriori()
+
 
 
