@@ -17,7 +17,7 @@ listFk = []
 dictionaryFk = {}
 dictionaryTail = OrderedDict({})
 
-
+# MS-APRIORI ALGORITHM
 def msApriori():
     listCk = []
     # CALL TO THE INIT_PASS FUNCTION
@@ -98,12 +98,12 @@ def msCandidateGen(listFkMinus1):
     listCk = []
 
     for i in range(0,len(listFkMinus1)):
-        for j in range (0,len(listFkMinus1)):
+        for j in range (i+1,len(listFkMinus1)):
 
             similarityFlag = True
 
             for l in range(0,len(listFkMinus1[i])):
-                if(listFkMinus1[i][l] != listFkMinus1[j][l]):
+               if(listFkMinus1[i][l] != listFkMinus1[j][l]):
                     similarityFlag = False
                     break
             if similarityFlag == True:
@@ -114,11 +114,13 @@ def msCandidateGen(listFkMinus1):
                     flag = 0
                     break
             if(flag == 1):
-                if( dictionaryMIS[listFkMinus1[i][len(listFkMinus1[i]) - 1]] < dictionaryMIS[listFkMinus1[j][len(listFkMinus1[i]) - 1]]) \
-                        and (dictionaryI[listFkMinus1[i][len(listFkMinus1[i]) - 1]] - dictionaryI[(listFkMinus1[j][len(listFkMinus1[i]) - 1])] <= SDC):
+#                if( dictionaryMIS[listFkMinus1[i][len(listFkMinus1[i]) - 1]] <= dictionaryMIS[listFkMinus1[j][len(listFkMinus1[i]) - 1]]) \
+#                        and (abs(dictionaryI[listFkMinus1[i][len(listFkMinus1[i]) - 1]] - dictionaryI[(listFkMinus1[j][len(listFkMinus1[i]) - 1])]) <= SDC):
+                 if(abs(dictionaryI[listFkMinus1[i][len(listFkMinus1[i]) - 1]] - dictionaryI[(listFkMinus1[j][len(listFkMinus1[i]) - 1])]) <= SDC):
                     listC = []
                     listC = listFkMinus1[i][:]
                     listC.append(listFkMinus1[j][len(listFkMinus1[i]) - 1])
+
                     count = 0
                     for eachItem in listC:
                         if eachItem in cannotBeTogether:
@@ -168,18 +170,21 @@ def printFunction(k, dictionaryTailCount , listFk):
         dictionaryFrequency = {}
         count = 0
         if(k == 1):
-            print("Frequent 1-itemsets \n")
+            print("Frequent 1-itemsets\n")
+
             for item in finalList:
-                print("\t",listOfItems.count(item), ': {', item, '}')
+                print("\t"+str(listOfItems.count(item))+ ' : {'+ str(item)+ '}')
         else:
-            print("Frequent ", k,"-itemsets \n")
+            print("Frequent ", k,"-itemsets\n")
+
             for item in finalList:
                     itemSubString = ','.join(item[1:])
                     itemString =','.join(item)
+                    printString = ', '.join(item)
                     dictionaryFrequency = computeFrequency(listFk)
-                    print("\t",dictionaryFrequency[itemString],": {", itemString, "}")
-                    print("\tTailcount = ",dictionaryTailCount[itemSubString])
-        print("\n\tTotal number of freuqent ",k, "-itemsets = ",len(finalList),"\n")
+                    print("\t"+str(dictionaryFrequency[itemString])+" : {"+ printString+ "}")
+                    print("Tailcount = ",dictionaryTailCount[itemSubString])
+        print("\n\tTotal number of frequent "+ str(k) + "-itemsets = "+str(len(finalList)),"\n\n")
 
 #USED FOR COMPUTING FREQUENCY OF EACH ITEMSET IN THE SET OF TRANSACTIONS
 def computeFrequency(listFk):
@@ -283,6 +288,7 @@ if __name__ == "__main__":
     dictionaryMIS = OrderedDict(sorted(dictionaryMIS.items(), key=lambda t: t[1]))
     #CALL TO THE MAIN ALGORITHM MS-APRIORI
     msApriori()
+
 
 
 
