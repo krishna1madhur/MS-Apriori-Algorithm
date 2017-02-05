@@ -130,7 +130,7 @@ def msCandidateGen(listFkMinus1):
                     else:
                         continue
                     subSetList = []
-#DILIP CODE
+
                     for m in range(0, len(listC)):
                         if (m == 0):
                             for n in range(m + 1, len(listC)):
